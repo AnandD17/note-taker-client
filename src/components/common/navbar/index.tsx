@@ -1,7 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Search } from "lucide-react";
-import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
 type NavbarProps = {

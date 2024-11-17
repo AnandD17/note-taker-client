@@ -15,9 +15,9 @@ export type TUpdateNote = {
 
 class NotesService {
 
-  async GetNotes(userId: string) {
+  async GetNotes(userId: string, searchTerm?: string) {
     try {
-      const response = await api.get(`/notes?userId=${userId}`);
+      const response = await api.get(`/notes?userId=${userId}${searchTerm ? `&search=${searchTerm}` : ""}`);
       return response.data.notes as TNote[];
     } catch (error) {
       throw error;

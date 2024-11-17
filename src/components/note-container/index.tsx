@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import { TNote } from "@/types/note";
 import Note from "@/components/note";
 import NotesService, { TUpdateNote } from "@/services/notes";
 import { useAuth0 } from "@auth0/auth0-react";
+import useDebounce from "@/hooks/use-debounce";
 
 const colors = [
   "#FF69B4",
@@ -35,9 +36,9 @@ const NoteContainer = ({ searchTerm }: { searchTerm: string }) => {
 
   const [notes, setNotes] = useState<TNote[]>([]);
 
-  const getNotes = async () => {
+  const getNotes = async (searchTerm?: string) => {
     if (!user) return;
-    const notes = await NotesService.GetNotes(user.sub as string);
+    const notes = await NotesService.GetNotes(user.sub as string, searchTerm);
     setNotes(notes);
   };
 
@@ -71,6 +72,14 @@ const NoteContainer = ({ searchTerm }: { searchTerm: string }) => {
     await NotesService.DeleteNote(deleteNoteId);
     getNotes();
   };
+
+  useDebounce(
+    () => {
+      getNotes(searchTerm);
+    },
+    1000,
+    [searchTerm]
+  );
 
   useEffect(() => {
     getNotes();
