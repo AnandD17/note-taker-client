@@ -2,9 +2,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Search } from "lucide-react";
 import { useState } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const Navbar = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const { isLoading, isAuthenticated, error, user, loginWithRedirect, logout } =
+    useAuth0();
+
+  console.log(isLoading, isAuthenticated, error, user);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -32,8 +37,15 @@ const Navbar = () => {
             <Button
               variant="ghost"
               className="text-gray-600 hover:text-gray-900"
+              onClick={() => {
+                if (isAuthenticated) {
+                  logout();
+                } else {
+                  loginWithRedirect();
+                }
+              }}
             >
-              Login
+              {isLoading ? "Loading..." : isAuthenticated ? "Logout" : "Login"}
             </Button>
           </div>
         </div>
