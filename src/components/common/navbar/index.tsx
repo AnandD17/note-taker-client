@@ -4,8 +4,12 @@ import { PlusCircle, Search } from "lucide-react";
 import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
-const Navbar = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+type NavbarProps = {
+  searchTerm: string;
+  setSearchTerm: (searchTerm: string) => void;
+};
+
+const Navbar = ({ searchTerm, setSearchTerm }: NavbarProps) => {
   const { isLoading, isAuthenticated, error, user, loginWithRedirect, logout } =
     useAuth0();
 
@@ -24,16 +28,18 @@ const Navbar = () => {
             </a>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                type="search"
-                placeholder="Search notes..."
-                className="pl-10 pr-4 py-2 w-full sm:w-64 rounded-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+            {isAuthenticated && (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  type="search"
+                  placeholder="Search notes..."
+                  className="pl-10 pr-4 py-2 w-full sm:w-64 rounded-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            )}
             <Button
               variant="ghost"
               className="text-gray-600 hover:text-gray-900"

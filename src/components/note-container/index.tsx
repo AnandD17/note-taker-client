@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,16 +15,66 @@ import { Textarea } from "@/components/ui/textarea";
 import { PlusCircle } from "lucide-react";
 import { TNote } from "@/types/note";
 import Note from "@/components/note";
-const NoteContainer = () => {
+import NotesService, { TUpdateNote } from "@/services/notes";
+import { useAuth0 } from "@auth0/auth0-react";
+
+const colors = [
+  "#FF69B4",
+  "#7A3CB2",
+  "#3B82F6",
+  "#3B82F6",
+  "#3B82F6",
+  "#FACC15",
+];
+
+const NoteContainer = ({ searchTerm }: { searchTerm: string }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [currentNote, setCurrentNote] = useState<TNote | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
 
-  const notes: TNote[] = [];
+  const { user } = useAuth0();
 
-  const filteredNotes = notes.filter((note) =>
-    note.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [notes, setNotes] = useState<TNote[]>([]);
+
+  const getNotes = async () => {
+    if (!user) return;
+    const notes = await NotesService.GetNotes(user.sub as string);
+    setNotes(notes);
+  };
+
+  const addNote = async () => {
+    if (!user) return;
+    const createNoteObj = {
+      userId: user.sub as string,
+      title: currentNote?.title || "",
+      description: currentNote?.description || "",
+      color: colors[Math.floor(Math.random() * colors.length)],
+    };
+    await NotesService.PostCreateNote(createNoteObj);
+    getNotes();
+  };
+
+  const updateNote = async () => {
+    if (!user) return;
+    const updateNoteObj = {
+      title: currentNote?.title || "",
+      description: currentNote?.description || "",
+    };
+    await NotesService.PutUpdateNote(
+      currentNote?._id as string,
+      updateNoteObj as TUpdateNote
+    );
+    getNotes();
+  };
+
+  const deleteNote = async (deleteNoteId: string) => {
+    if (!user) return;
+    await NotesService.DeleteNote(deleteNoteId);
+    getNotes();
+  };
+
+  useEffect(() => {
+    getNotes();
+  }, [user]);
 
   return (
     <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -43,10 +93,10 @@ const NoteContainer = () => {
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>
-                {currentNote ? "Edit Note" : "Create Note"}
+                {currentNote?._id ? "Edit Note" : "Create Note"}
               </DialogTitle>
               <DialogDescription>
-                {currentNote
+                {currentNote?._id
                   ? "Make changes to your note here."
                   : "Add a new note to your collection."}
               </DialogDescription>
@@ -69,17 +119,17 @@ const NoteContainer = () => {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="content" className="text-right">
-                  Content
+                <Label htmlFor="description" className="text-right">
+                  Description
                 </Label>
                 <Textarea
-                  id="content"
+                  id="description"
                   className="col-span-3"
-                  value={currentNote?.content || ""}
+                  value={currentNote?.description || ""}
                   onChange={(e) =>
                     setCurrentNote({
                       ...currentNote,
-                      content: e.target.value,
+                      description: e.target.value,
                     } as TNote)
                   }
                 />
@@ -88,11 +138,11 @@ const NoteContainer = () => {
             <DialogFooter>
               <Button
                 onClick={() => {
-                  // if (currentNote?.id) {
-                  //   updateNote(currentNote)
-                  // } else if (currentNote) {
-                  //   addNote(currentNote)
-                  // }
+                  if (currentNote?._id) {
+                    updateNote();
+                  } else if (currentNote) {
+                    addNote();
+                  }
                   setIsCreateModalOpen(false);
                 }}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -104,12 +154,13 @@ const NoteContainer = () => {
         </Dialog>
       </div>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredNotes.map((note) => (
+        {notes.map((note) => (
           <Note
-            key={note.id}
+            key={note._id}
             note={note}
             setCurrentNote={setCurrentNote}
             setIsCreateModalOpen={setIsCreateModalOpen}
+            deleteNote={deleteNote}
           />
         ))}
       </div>

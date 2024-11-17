@@ -16,17 +16,28 @@ type Props = {
   note: TNote;
   setCurrentNote: (note: TNote) => void;
   setIsCreateModalOpen: (open: boolean) => void;
+  deleteNote: (deleteNoteId: string) => void;
 };
 
-const Note = ({ note, setCurrentNote, setIsCreateModalOpen }: Props) => {
+const Note = ({
+  note,
+  setCurrentNote,
+  setIsCreateModalOpen,
+  deleteNote,
+}: Props) => {
   return (
     <div
-      key={note.id}
-      className={`${note.color} rounded-lg p-6 shadow-md transition-shadow hover:shadow-lg transition-opacity transform duration-200 ease-in-out opacity-100`}
-      style={{ opacity: 1, transform: "translateY(0)" }}
+      key={note._id}
+      className={` bg-opacity-10 border-l-4 rounded-lg p-6 shadow-md transition-shadow hover:shadow-lg transition-opacity transform duration-200 ease-in-out opacity-100`}
+      style={{
+        opacity: 1,
+        transform: "translateY(0)",
+        backgroundColor: note.color + "20",
+        borderColor: note.color,
+      }}
     >
       <h2 className="text-xl font-semibold mb-2 text-gray-800">{note.title}</h2>
-      <p className="text-gray-600 mb-4">{note.content}</p>
+      <p className="text-gray-600 mb-4">{note.description}</p>
       <div className="flex justify-end space-x-2">
         <Button
           variant="outline"
@@ -62,7 +73,7 @@ const Note = ({ note, setCurrentNote, setIsCreateModalOpen }: Props) => {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                //   onClick={() => deleteNote(note.id)}
+                onClick={() => deleteNote(note._id)}
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
                 Delete
